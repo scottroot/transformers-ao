@@ -1,0 +1,16 @@
+[target.wasm32-unknown-emscripten]
+linker = "emcc"
+rustflags = [
+  "-C", """link-args=
+  -O0 -sMEMORY64 -sALLOW_MEMORY_GROWTH=1
+  -sINITIAL_MEMORY=6291456 -sMAXIMUM_MEMORY=524288000
+  -sWASM=1
+  -sMODULARIZE -sDETERMINISTIC=1 -sNODERAWFS=0
+  --pre-js ./build/pre.js
+  -I./build/lua-5.3.4/src
+  ./build/compile.c
+  ./build/lua-5.3.4/src/liblua.a
+  -lm -ldl
+  -sEXPORTED_RUNTIME_METHODS=["cwrap"]
+  """
+]
