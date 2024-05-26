@@ -1,11 +1,12 @@
 # Build Script
 ## Compile Rust + Lua to wasm32-unknown-emscripten
 
-#### Maintains same/similar functionality to the emcc-lua Python compiler script from:
-* the old [ysugimoto/webassembly-lua repo](https://github.com/ysugimoto/webassembly-lua)
-* which can also be found in the [AO repo](https://github.com/permaweb/ao/blob/main/dev-cli/container/Dockerfile)
+#### Maintains same/similar functionality to the emcc-lua Python compiler script:
+* ##### From the old [ysugimoto/webassembly-lua repo](https://github.com/ysugimoto/webassembly-lua), which can also be found in the [AO repo](https://github.com/permaweb/ao/blob/main/dev-cli/container/Dockerfile)
+* ##### This implementation of that logic is bolstered by Rust's strong typing.
+* ##### The `template.c` file here is the same as `main.c` in those other repos, with the addition of registering luaopen_transformers.
 
-#### -- Here it is bolstered by Rust's strong typing.
+----
 
 #### Script currently only scans the local lua file directory (where your custom Lua scripts and other AOS files would be) and includes .lua files (not library .so or .a files).  Will revisit this if a need arises for using other libs or a LuaRocks dependency.
 
