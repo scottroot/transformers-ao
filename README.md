@@ -4,6 +4,7 @@ first successful minimal test load in ao-localnet 5/28
 
 # To-Do
 * Test & publish wasm module to testnet
+* Validate model-loading strategy on AO + further testing
 * Add lua script demonstrating how to easily use transformers-ao
 * Add models
   * ~~SentenceTransformers (bert)~~ (Done)
