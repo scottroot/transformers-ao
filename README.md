@@ -1,6 +1,9 @@
  
 # Transformers AO (wip)
-first successful minimal test load in ao-localnet 5/28
+Transformers AO is intended to bring the functionality of Hugging Face's transformers python library to AO.  
+This means the ability to use the latest and your favorite open-source models in a familiar API, running on Arweave's computation blockchain "AO".
+  
+*first successful minimal test load in ao-localnet 5/28*
 
 # To-Do
 * Test & publish wasm module to testnet
