@@ -3,10 +3,10 @@ all: clean build
 
 .PHONY: build
 build:
-	LUA_LIB=./build/lua-5.3.4/src cargo build --release --target wasm32-unknown-emscripten
+	docker run --rm -v .:/src scottroot/ao:latest \
+	bash -c "RUST_BACKTRACE=1 TOKENIZERS_PARALLELISM=false RAYON_RS_NUM_THREADS=1 \
+		 cargo build --release --target wasm32-unknown-emscripten"
 
 .PHONY: clean
 clean:
-	rm -rf target/
-	rm -f build/compile.c
-	rm -f build/lua-5.3.4/src/*.wasm
+	cargo clean
