@@ -1,0 +1,17 @@
+{
+  "name": "tests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@permaweb/ao-loader": "^0.0.32",
+    "wabt": "^1.0.35",
+    "wasm-json-toolkit": "github:permaweb/wasm-json-toolkit#v0.2.8"
+  }
+}
