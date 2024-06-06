@@ -1,4 +1,3 @@
-.PHONY: all
 all: clean build
 
 .PHONY: build
