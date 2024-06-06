@@ -23,7 +23,9 @@ impl Embedding {
         serde_json::to_string(self)
     }
 }
+
 impl UserData for Embedding {}
+
 #[derive(Debug)]
 struct Args {
     /// The model to use, check out available models: https://huggingface.co/models?library=sentence-transformers&sort=trending
@@ -44,26 +46,27 @@ struct Args {
 }
 
 impl Args {
-    fn build_model_and_tokenizer(&self) -> LuaResult<(BertModel, Tokenizer)> {
-        let mut config: Config = serde_json::from_str::<Config>(&self.config)
-            .map_err(|err| LuaError::external(err))?;
-        if self.approximate_gelu {
-            config.hidden_act = HiddenAct::GeluApproximate;
-        }
-        let model_bytes: Vec<u8> = self.model.clone(); //.as_bytes().to_vec();
-        let vb = VarBuilder::from_buffered_safetensors(
-            model_bytes,
-            DTYPE,
-            &self.device,
-        ).map_err(|err| LuaError::external(err))?;
-        let model = BertModel::load(vb, &config)
-            .map_err(|err| LuaError::external(err))?;
+    // fn build_model_and_tokenizer(&self) -> LuaResult<(BertModel, Tokenizer)> {
+    //     let mut config: Config = serde_json::from_str::<Config>(&self.config)
+    //         .map_err(|err| LuaError::external(err))?;
+    //     if self.approximate_gelu {
+    //         config.hidden_act = HiddenAct::GeluApproximate;
+    //     }
+    //     let model_bytes: Vec<u8> = self.model.clone(); //.as_bytes().to_vec();
+    //     let vb = VarBuilder::from_buffered_safetensors(
+    //         model_bytes,
+    //         DTYPE,
+    //         &self.device,
+    //     ).map_err(|err| LuaError::external(err))?;
+    //     let model = BertModel::load(vb, &config)
+    //         .map_err(|err| LuaError::external(err))?;
 
-        let tokenizer = Tokenizer::from_bytes(self.tokenizer.clone())//.as_bytes())
-            .map_err(|err| LuaError::external(err))?;
+    //     let tokenizer = Tokenizer::from_bytes(self.tokenizer.clone())//.as_bytes())
+    //         .map_err(|err| LuaError::external(err))?;
 
-        Ok((model, tokenizer))
-    }
+    //     Ok((model, tokenizer))
+    // }
+    
     fn _encode_text(&self) -> LuaResult<Vec<f32>> {
         // let (model, mut tokenizer) = self.build_model_and_tokenizer()
         //     .map_err(|err| LuaError::external(err))?;
@@ -106,8 +109,8 @@ impl Args {
             .get_ids().to_vec();
         let token_ids = Tensor::new(&tokens[..], &self.device)
             .map_err(|err| {
-                // If there's a problem here, it is just going to panic and won't print this error.
-                // Issue with i64 and thread initialization in latest candle
+                // If there's a problem here, it is likely just going to panic and won't print this error.
+                // Seems like issue with i64 and thread initialization in latest candle
                 eprintln!("!! Error on Tensor::new\n {}", err);
                 LuaError::external(err)
             })?
