@@ -671,19 +671,6 @@ fn run(lua: &Lua, args: Args) -> LuaResult<mlua::Variadic<String>> {
             idx + 1,
             args.num_samples
         );
-        // let image_bytes = save_image(
-        //     &vae_model,
-        //     &latents,
-        //     vae_scale,
-        //     bsize,
-        //     idx,
-        //     // &args.final_image,
-        //     args.num_samples,
-        //     None,
-        // ).map_err(|e| {
-        //     println!("{}", e);
-        //     LuaError::RuntimeError(e.to_string())
-        // })?;
         let image64 = generate_image(
             &vae_model,
             &latents,
