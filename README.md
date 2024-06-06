@@ -11,7 +11,7 @@ This means the ability to use the latest and your favorite open-source models in
 * Add lua script demonstrating how to easily use transformers-ao
 * Add models
   * ~~SentenceTransformers (bert)~~ (Done)
-  * ~~Clip vit-base32 text model~~ (Done)
+  * Clip vit-base32 text model (Done, need to clean and upload)
   * ~~Stable Diffusion 1.5~~ (Done)
   * Mistral
   * Stable Diffusion 2
