@@ -34,7 +34,7 @@ struct Args {
     config: String,
     tokenizer: Vec<u8>, //String,
     // revision: Option<String>,
-    /// When set, compute embeddings for this prompt.
+    /// The text to encode.
     prompt: String,
     /// Use the pytorch weights rather than the safetensors ones
     // use_pth: bool,
