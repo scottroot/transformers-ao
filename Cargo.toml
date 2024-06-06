@@ -1,11 +1,37 @@
 [package]
-name = "transformers_ao"
+name = "global_state"
 version = "0.1.0"
 edition = "2021"
 
-[dependencies]
-libc = "0.2.155"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+#name = "global_state"
+crate-type = ["cdylib"]
 
-[profile.release]
-strip = true
-lto = true
+#[[bin]]
+#name = "main"
+#path = "src/bin/main.rs"
+
+[dependencies]
+mlua = { version = "0.9.8", features = ["lua53", "serialize", "vendored", "send"] }
+#mlua = { version = "0.9.8", features = ["lua53", "vendored"] }
+once_cell = "1.19.0"
+serde = { version = "1.0.171" }
+serde_json = "1.0.117"
+wasm-bindgen = "0.2.92"
+base64 = "0.22.1"
+# candle-core = { git = "https://github.com/huggingface/candle.git", version = "0.6.0" }
+# candle-nn = { git = "https://github.com/huggingface/candle.git", version = "0.6.0" }
+# candle-transformers = { git = "https://github.com/huggingface/candle.git", version = "0.6.0" }
+candle-core = { git = "https://github.com/huggingface/candle.git", tag = "0.5.1" }
+candle-nn = { git = "https://github.com/huggingface/candle.git", tag = "0.5.1" }
+candle-transformers = { git = "https://github.com/huggingface/candle.git", tag = "0.5.1" }
+#image = { version = "0.25.0", default-features = false, features = ["png"] }
+rayon = "1.7.0"
+#tokenizers = { git = "https://github.com/huggingface/tokenizers.git", default-features = false, features = ["unstable_wasm"] }
+tokenizers = { git = "https://github.com/huggingface/tokenizers.git", default-features = false, features = ["onig", "unstable_wasm"] }
+safetensors = "0.4.3"
+num_cpus = "1.16.0"
+console_error_panic_hook = "0.1.7"
+#tokenizers = { git = "https://github.com/huggingface/tokenizers.git" }
+
