@@ -1,5 +1,3 @@
---package.path = package.path .. ";/mnt/c/users/mini/RustroverProjects/global-state/src/?.lua"
---package.path = package.path .. ";/mnt/c/users/mini/RustroverProjects/global-state/src/.?.lua"
 package.path = package.path .. ";./?.lua"
 stringify = require("stringify")
 PRINT = print
