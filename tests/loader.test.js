@@ -1,7 +1,5 @@
-// import initModule from '../outtest.js';
-// console.log(`typeof initModule = ${typeof initModule}\n\n`);
 import fs from "fs";
-import {default as AoLoader} from "./ao-glue-loader.cjs";
+import {default as AoLoader} from "./ao-loader.cjs";
 
 
 const env = {Process: {Id: 'AOS', Owner: 'FOOBAR', Tags: [{ name: 'Name', value: 'Thomas' }]}}
