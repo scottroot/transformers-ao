@@ -1,11 +1,21 @@
+[target.x86_64-unknown-linux-gnu]
+rustflags = ["""-Clink-args=-rdynamic"""]
+
+[target.x86_64-apple-darwin]
+rustflags = ["""-Clink-args=-rdynamic"""]
+
 [target.wasm32-unknown-emscripten]
 linker = "emcc"
+ar = "emar"
 rustflags = [
-  """-Clink-args=
-  -O3 -sWASM=1 -sEXPORTED_FUNCTIONS=["_handle"]
-  -o process.js
-  -sMODULARIZE
-  -sASSERTIONS
-  -sEXPORTED_RUNTIME_METHODS=["cwrap"]
-  """
+  """-Clink-args=-O0
+  -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=134217728 -sMAXIMUM_MEMORY=536870912
+  -sWASM=1 -sMODULARIZE=1 -sDETERMINISTIC=1 -sNODERAWFS=0
+  -I/lua-5.3.4/src
+  /lua-5.3.4/src/liblua.a
+  -lm -ldl
+  -o outtest.js
+  -sEXPORTED_RUNTIME_METHODS=["cwrap"] -vv
+  -sEXPORT_NAME=globalState
+  """,
 ]
