@@ -1,8 +1,9 @@
 const Emscripten = require('./formats/emscripten.cjs')
 const Emscripten2 = require('./formats/emscripten2.cjs')
 const Emscripten3 = require('./formats/emscripten3.cjs')
-const Emscripten4 = require('./formats/emscripten-custom.js')
-const Wasm64 = require('./formats/emscripten3.cjs')
+const Emscripten4 = require('./formats/emscripten-custom.cjs')
+const EmscriptenOuttest = require('../../outtest.cjs')
+const Wasm64 = require('./formats/wasm64-unknown-emscripten.cjs')
 
 /* eslint-enable */
 
@@ -99,6 +100,21 @@ module.exports = async function (binary, options) {
     instance = await Emscripten3(binary, options)
   } else if (options.format === "wasm32-unknown-emscripten4") {
     instance = await Emscripten4(binary, options)
+  } else if (options.format === "wasm32-unknown-emscriptenEmscriptenOuttest") {
+    instance = await EmscriptenOuttest(binary, options)
+
+  // } else if (options.format === "wasm32-unknown-emscripten4-weavedrive") {
+  //   if (typeof binary === "function") {
+  //     options.instantiateWasm = binary
+  //   } else {
+  //     options.wasmBinary = binary
+  //   }
+  //
+  //   instance = await Emscripten4WD(options)
+  //
+  //   await instance['FS_createPath']('/', 'data')
+  //
+  //   doHandle = instance.cwrap('handle', 'string', ['string', 'string'], { async: true })
   } else if (options.format === "wasm64-unknown-emscripten-draft_2024_02_15") {
     if (typeof binary === "function") {
       options.instantiateWasm = binary
@@ -107,9 +123,7 @@ module.exports = async function (binary, options) {
     }
 
     instance = await Wasm64(options)
-
     await instance['FS_createPath']('/', 'data')
-
     doHandle = instance.cwrap('handle', 'string', ['string', 'string'], { async: true })
   }
 
@@ -126,9 +140,14 @@ module.exports = async function (binary, options) {
    * So we immediately remove any listeners added by Module,
    * in order to prevent memory leaks
    */
-  if (instance.cleanupListeners) {
+  if (instance?.cleanupListeners) {
     instance.cleanupListeners()
   }
+  // const asyncFormats = [
+  //   "wasm64-unknown-emscripten-draft_2024_02_15",
+  //   "wasm32-unknown-emscripten4-weavedrive",
+  // ];
+  // if (!asyncFormats.includes(options.format)) {
   if (options.format !== "wasm64-unknown-emscripten-draft_2024_02_15") {
     doHandle = instance.cwrap('handle', 'string', ['string', 'string'])
   }

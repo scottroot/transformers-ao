@@ -1,6 +1,6 @@
 [package]
-name = "global_state"
-version = "0.1.0"
+name = "transformers-ao"
+version = "0.0.1"
 edition = "2021"
 
 [lib]
@@ -25,4 +25,16 @@ tokenizers = { git = "https://github.com/huggingface/tokenizers.git", default-fe
 safetensors = "0.4.3"
 num_cpus = "1.16.0"
 console_error_panic_hook = "0.1.7"
+#libc = "0.2.155"
 
+[profile.release]
+#panic = "abort"
+##opt-level = 1
+strip = "debuginfo" #true # debuginfo # symbols
+##lto = true
+##debug = true
+##debug-assertions = false
+##overflow-checks = false
+#lto = true
+##panic = 'abort'
+##strip = "symbols"
