@@ -9,10 +9,11 @@ linker = "emcc"
 ar = "emar"
 
 #  -Lbuild/aolibc -l:aolibc.a
+# previous max memory 536870912
 rustflags = [
   """-Clink-args=-O3 -g
   -Lbuild/aolibc -l:aolibc.a
-  -sASYNCIFY=1 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=134217728 -sMAXIMUM_MEMORY=536870912
+  -sASYNCIFY=1 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=134217728 -sMAXIMUM_MEMORY=1073741824
   -sWASM=1 -sMODULARIZE=1 -sDETERMINISTIC=1 -sNODERAWFS=0 -sFORCE_FILESYSTEM=1
   -lm -ldl -msimd128
   -o outtest.js
