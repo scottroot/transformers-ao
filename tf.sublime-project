@@ -1,0 +1,54 @@
+{
+    "build_systems":
+    [
+        {
+            "file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
+            "name": "Lua Builder",
+            "selector": "source.lua",
+            "shell_cmd": "lua53.exe $file",
+    	},
+        {
+            "file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
+            "name": "Node Builder",
+            "selector": "source.js",
+            "shell_cmd": "node --inspect $file",
+        },
+        {
+            "file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
+            "name": "Python Builder",
+            "selector": "source.python",
+            "shell_cmd": "\"python\" -u \"$file\"",
+        }
+    ],
+    "folders":
+    [
+        {
+            "follow_symlinks": true,
+            "path": ".",
+        }
+    ],
+    "settings":
+    {
+        "LSP":
+        {
+    			"LSP-typescript":
+    			{
+    				"enabled": true,
+    			},
+          "LSP-eslint":
+          {
+    				"enabled": true,
+    			},
+            "LSP-lua":
+            {
+				"settings":
+				{
+					"Lua.diagnostics.globals":
+					[
+						"process"
+					]
+				}
+			},
+        },
+    },
+}

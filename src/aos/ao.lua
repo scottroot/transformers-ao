@@ -49,6 +49,10 @@ function ao.normalize(msg)
 end
 
 function ao.init(env)
+    -- TODO: remove this print
+    --println("Running ao.init(env) ....... env:")
+    --println(env.Process.Id)
+    --println(tostring(env))
     if ao.id == "" then ao.id = env.Process.Id end
 
     if ao._module == "" then
@@ -199,3 +203,8 @@ function ao.result(result)
 end
 
 return ao
+
+
+-- for i, j in pairs(ao) do
+--     print(tostring(i) .. tostring(j))
+-- end

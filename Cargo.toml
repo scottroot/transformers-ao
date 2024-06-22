@@ -2,13 +2,18 @@
 name = "transformers-ao"
 version = "0.0.1"
 edition = "2021"
+#build = "build/main.rs"
+
+[features]
+default = []
+lib = []
+logging = []
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-mlua = { version = "0.9.8", features = ["lua53", "serialize", "vendored", "send"] } # TODO: remove send if not going to attempt cross thread stuff
-once_cell = "1.19.0"
+mlua = { version = "0.9.8", features = ["lua53", "serialize", "vendored", "macros", "send"] }
 serde = { version = "1.0.171" }
 serde_json = "1.0.117"
 wasm-bindgen = "0.2.92"
@@ -23,18 +28,30 @@ candle-transformers = { git = "https://github.com/huggingface/candle.git", tag =
 rayon = "1.7.0"
 tokenizers = { git = "https://github.com/huggingface/tokenizers.git", default-features = false, features = ["onig", "unstable_wasm"] }
 safetensors = "0.4.3"
-num_cpus = "1.16.0"
 console_error_panic_hook = "0.1.7"
-#libc = "0.2.155"
+lazy_static = "1.4.0"
+
+[build-dependencies]
+cc = "1.0.3"
 
 [profile.release]
-#panic = "abort"
-##opt-level = 1
-strip = "debuginfo" #true # debuginfo # symbols
-##lto = true
-##debug = true
-##debug-assertions = false
-##overflow-checks = false
+#opt-level = "z"
 #lto = true
-##panic = 'abort'
-##strip = "symbols"
+codegen-units = 16
+panic = "unwind" # "abort"
+strip = "none" #"debuginfo" #none # debuginfo # symbols
+debug = true
+debug-assertions = true
+#overflow-checks = false
+
+[profile.dev]
+opt-level = 2
+lto = false
+codegen-units = 1 # I think 16 is default
+debug = true
+debug-assertions = false
+overflow-checks = true
+
+[[test]]
+name = "lib_test"
+path = "tests/lib_test.rs"

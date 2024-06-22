@@ -1,0 +1,86 @@
+{
+  "Process": {
+    "Id": "NyfoWklxQ0vkk34SJiOYxpeW-PCrBl500wH7S_rVmYI",
+    "Owner": "N0FPFxNaR8e5P0zWjX70jNmb-jiX46CwgdfBYw-Am1M",
+    "Tags": [
+      {
+        "name": "Extension",
+        "value": "WeaveDrive"
+      },
+      {
+        "name": "Memory-Limit",
+        "value": "4gb"
+      },
+      {
+        "name": "Data-Protocol",
+        "value": "ao"
+      },
+      {
+        "name": "Variant",
+        "value": "ao.TN.1"
+      },
+      {
+        "name": "Type",
+        "value": "Process"
+      },
+      {
+        "name": "Module",
+        "value": "aIPJFLa-1oumIuRcvQlZTjv6asNKXZIPBwOJqzDA0SI"
+      },
+      {
+        "name": "Scheduler",
+        "value": "AnTgDyREHJYwOi-6Kr3izJwLt9FLWMr7ZD_2NDhYj5k"
+      },
+      {
+        "name": "SDK",
+        "value": "aoconnect"
+      },
+      {
+        "name": "Content-Type",
+        "value": "text/plain"
+      }
+    ]
+  },
+  "Module": {
+    "Id": "aIPJFLa-1oumIuRcvQlZTjv6asNKXZIPBwOJqzDA0SI",
+    "Owner": "OmO8vDHqD07rvl__qs1PGN3vPYtmtXJhFxVgayqrF2Q",
+    "Tags": [
+      {
+        "name": "Memory-Limit",
+        "value": "4gb"
+      },
+      {
+        "name": "Compute-Limit",
+        "value": "9000000000000"
+      },
+      {
+        "name": "Data-Protocol",
+        "value": "ao"
+      },
+      {
+        "name": "Type",
+        "value": "Module"
+      },
+      {
+        "name": "Module-Format",
+        "value": "wasm32-unknown-emscripten4-weavedrive"
+      },
+      {
+        "name": "Input-Encoding",
+        "value": "JSON-1"
+      },
+      {
+        "name": "Output-Encoding",
+        "value": "JSON-1"
+      },
+      {
+        "name": "Variant",
+        "value": "ao.TN.1"
+      },
+      {
+        "name": "Content-Type",
+        "value": "application/wasm"
+      }
+    ]
+  }
+}

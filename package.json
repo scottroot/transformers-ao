@@ -1,0 +1,28 @@
+{
+  "name": "transformers-ao-js-utils",
+  "type": "module",
+  "scripts": {
+    "assign": "node tests/assignment.test.js",
+    "test:llamaload": "node --experimental-wasm-memory64 tests/llamaloader.test.js",
+    "test:fload": "node --experimental-wasm-memory64 tests/floader.test.js",
+    "test:weavedrive": "node --experimental-wasm-memory64 tests/weavedrive.test.js",
+    "test:assignment": "node tests/assignment.test.js"
+  },
+  "dependencies": {
+    "@irys/sdk": "^0.2.3",
+    "@permaweb/ao-loader": "^0.0.32",
+    "@permaweb/aoconnect": "^0.0.55",
+    "@permaweb/wallet": "^0.0.2",
+    "aoconnect-ts": "github:scottroot/aoconnect#main",
+    "arbundles": "^0.11.1",
+    "arweave": "^1.15.1",
+    "axios": "^1.7.2",
+    "cli-progress": "^3.12.0",
+    "stream": "^0.0.2",
+    "wabt": "^1.0.35",
+    "wasm-json-toolkit": "github:permaweb/wasm-json-toolkit#v0.2.8"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

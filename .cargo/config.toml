@@ -1,28 +1,33 @@
 [target.x86_64-unknown-linux-gnu]
-rustflags = ["""-Clink-args=-rdynamic"""]
+rustflags = ["-Clink-args=-rdynamic"]
 
 [target.x86_64-apple-darwin]
-rustflags = ["""-Clink-args=-rdynamic"""]
+rustflags = ["-Clink-args=-rdynamic"]
+
+[target.wasm64-unknown-unknown]
+linker = "emcc"
+ar = "emar"
 
 [target.wasm32-unknown-emscripten]
 linker = "emcc"
 ar = "emar"
-
-#  -Lbuild/aolibc -l:aolibc.a
 # previous max memory 536870912
 rustflags = [
-  """-Clink-args=-O3 -g
-  -Lbuild/aolibc -l:aolibc.a
-  -sASYNCIFY=1 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=134217728 -sMAXIMUM_MEMORY=1073741824
-  -sWASM=1 -sMODULARIZE=1 -sDETERMINISTIC=1 -sNODERAWFS=0 -sFORCE_FILESYSTEM=1
-  -lm -ldl -msimd128
-  -o outtest.js
-  -sEXPORTED_RUNTIME_METHODS=["cwrap"]
-  --cache build/libc_objects/cache
-  """,
-#  -Lbuild/libc_objects -l:custom-libc.a
-#  -nostdlib -nodefaultlibs -nostartfiles
+    "-Clink-arg=-O3",
+#    "-Clink-arg=-g",
+    "-Clink-arg=src/weavedrive.c",
+    "-Clink-arg=--pre-js", "-Clink-arg=build/pre.js",
+    "-Clink-arg=-sASYNCIFY=1",
+    "-Clink-arg=-sALLOW_MEMORY_GROWTH=1",
+    "-Clink-arg=-sINITIAL_MEMORY=134217728",
+    "-Clink-arg=-sMAXIMUM_MEMORY=1073741824",
+    "-Clink-arg=-sMODULARIZE=1",
+    "-Clink-arg=-sDETERMINISTIC=1",
+    "-Clink-arg=-sASSERTIONS=1",
+    "-Clink-arg=-sNODERAWFS=0",
+    "-Clink-arg=-sFORCE_FILESYSTEM=1",
+    "-Clink-arg=-lm",
+    "-Clink-arg=-ldl",
+    "-Clink-arg=-oouttest.js",
+    "-Clink-arg=-sEXPORTED_RUNTIME_METHODS=cwrap",
 ]
-
-#  -sEXPORT_NAME=tfao
-#  -I/lua-5.3.4/src /lua-5.3.4/src/liblua.a

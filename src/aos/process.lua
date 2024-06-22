@@ -2,7 +2,12 @@ local pretty = require('.pretty')
 local base64 = require('.base64')
 local json = require('json')
 local chance = require('.chance')
+local stringify = require(".stringify")
+local _ao = require('ao')
 -- local crypto = require('.crypto.init')
+Dump = require('.dump')
+Utils = require('.utils')
+Handlers = require('.handlers')
 
 Colors = {
   red = "\27[31m",
@@ -11,15 +16,12 @@ Colors = {
   reset = "\27[0m",
   gray = "\27[90m"
 }
-
 Bell = "\x07"
+Errors = Errors or {}
+Inbox = Inbox or {}
 
-Dump = require('.dump')
-Utils = require('.utils')
-Handlers = require('.handlers')
-local stringify = require(".stringify")
-local _ao = require('ao')
 local process = { _version = "0.2.0" }
+
 local maxInboxCount = 10000
 
 -- wrap ao.send and ao.spawn for magic table
@@ -74,6 +76,10 @@ function Prompt()
   return "aos> "
 end
 
+if not println then
+  println = print
+end
+
 function print(a)
   if type(a) == "table" then
     a = stringify.format(a)
@@ -82,11 +88,11 @@ function print(a)
   pcall(function () 
     local data = a
     if _ao.outbox.Output.data then
-      data =  _ao.outbox.Output.data .. "\n" .. a
+      data = _ao.outbox.Output.data .. "\n" .. a
     end
     _ao.outbox.Output = { data = data, prompt = Prompt(), print = true }
   end)
-
+  -- println(a)
   return tostring(a)
 end
 
@@ -124,7 +130,9 @@ end
 local function initializeState(msg, env)
   if not Seeded then
     --math.randomseed(1234)
-    chance.seed(tonumber(msg['Block-Height'] .. stringToSeed(msg.Owner .. msg.Module .. msg.Id)))
+    local height = msg['Block-Height'] or "1000"
+    -- chance.seed(tonumber(msg['Block-Height'] .. stringToSeed(msg.Owner .. msg.Module .. msg.Id)))
+    chance.seed(12)
     math.random = function (...)
       local args = {...}
       local n = #args
@@ -153,7 +161,6 @@ local function initializeState(msg, env)
       Owner = msg.From
     end
   end
-
   if not Name then
     local aosName = findObject(env.Process.Tags, "name", "Name")
     if aosName then
@@ -162,7 +169,6 @@ local function initializeState(msg, env)
       Name = 'aos'
     end
   end
-
 end
 
 function Version()
@@ -179,24 +185,28 @@ function process.handle(msg, ao)
   -- tagify Process
   ao.env.Process.TagArray = ao.env.Process.Tags
   ao.env.Process.Tags = Tab(ao.env.Process)
-  if type(msg) == "table" then
-  	println(require(".stringify").format(msg))
-  end
+  -- if type(msg) == "table" then
+  -- 	println(require(".stringify").format(msg))
+  -- end
 
   --println(tostring(msg.Tags))
-  if msg.Tags['Model-Type'] and msg.Tags['Model-Type'] == 'bert' then
-    println("Tags Model-Type matches 'bert'")
-    local bert = require("bert")
-    -- println("Required 'bert'")
-    local config = {}
-    config.prompt = msg.Data
-    --msg.Data = require('json').decode(msg.Data or "{}")
-    local embedding = bert.encode_text(config)
-    println("Got embedding from 'bert'")
-    --local result = json.encode(embedding)
-    --println("finished result")
-    return {Output = embedding}
-  end
+  -- if msg.Tags['Model-Type'] and msg.Tags['Model-Type'] == 'bert' then
+  --   -- println("Tags Model-Type matches 'bert'")
+  --   local bert = require("bert")
+  --   if bert == nil then
+  --     print("bert is not here man")
+  --     return
+  --   end
+  --   -- println("Required 'bert'")
+  --   local config = {}
+  --   config.prompt = msg.Data
+  --   --msg.Data = require('json').decode(msg.Data or "{}")
+  --   local embedding = bert.encode_text(config)
+  --   -- println("Got embedding from 'bert'")
+  --   --local result = json.encode(embedding)
+  --   --println("finished result")
+  --   return {Output = embedding}
+  -- end
   -- magic table - if Content-Type == application/json - decode msg.Data to a Table
   if msg.Tags['Content-Type'] and msg.Tags['Content-Type'] == 'application/json' then
     msg.Data = require('json').decode(msg.Data or "{}")
