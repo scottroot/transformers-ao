@@ -15,6 +15,7 @@ ar = "emar"
 rustflags = [
     "-Clink-arg=-O3",
 #    "-Clink-arg=-g",
+    "-Clink-arg=src/ao_log.c",
     "-Clink-arg=src/weavedrive.c",
     "-Clink-arg=--pre-js", "-Clink-arg=build/pre.js",
     "-Clink-arg=-sASYNCIFY=1",
@@ -28,6 +29,6 @@ rustflags = [
     "-Clink-arg=-sFORCE_FILESYSTEM=1",
     "-Clink-arg=-lm",
     "-Clink-arg=-ldl",
-    "-Clink-arg=-oouttest.js",
     "-Clink-arg=-sEXPORTED_RUNTIME_METHODS=cwrap",
+    "-Clink-arg=-obuild/transformers_ao.js",
 ]

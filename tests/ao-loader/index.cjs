@@ -1,8 +1,7 @@
 const Emscripten = require('./formats/emscripten.cjs')
 const Emscripten2 = require('./formats/emscripten2.cjs')
 const Emscripten3 = require('./formats/emscripten3.cjs')
-const Emscripten4 = require('./formats/emscripten-custom.cjs')
-const EmscriptenOuttest = require('../../outtest.cjs')
+const Emscripten4 = require('../../build/transformers_ao.cjs')
 const Wasm64 = require('./formats/wasm64-unknown-emscripten.cjs')
 
 /* eslint-enable */
@@ -89,39 +88,38 @@ const Wasm64 = require('./formats/wasm64-unknown-emscripten.cjs')
 module.exports = async function (binary, options) {
   let instance = null
   let doHandle = null
+  let isAsyncModule = false;
   if (options === null) {
     options = { format: 'wasm32-unknown-emscripten' }
   }
   if (options.format === "wasm32-unknown-emscripten") {
     instance = await Emscripten(binary, options)
-  } else if (options.format === "wasm32-unknown-emscripten2") {
+  }
+  else if (options.format === "wasm32-unknown-emscripten2") {
     instance = await Emscripten2(binary, options)
-  } else if (options.format === "wasm32-unknown-emscripten3") {
+  }
+  else if (options.format === "wasm32-unknown-emscripten3") {
     instance = await Emscripten3(binary, options)
-  } else if (options.format === "wasm32-unknown-emscripten4") {
-    instance = await Emscripten4(binary, options)
-  } else if (options.format === "wasm32-unknown-emscriptenEmscriptenOuttest") {
-    instance = await EmscriptenOuttest(binary, options)
-
-  // } else if (options.format === "wasm32-unknown-emscripten4-weavedrive") {
-  //   if (typeof binary === "function") {
-  //     options.instantiateWasm = binary
-  //   } else {
-  //     options.wasmBinary = binary
-  //   }
-  //
-  //   instance = await Emscripten4WD(options)
-  //
-  //   await instance['FS_createPath']('/', 'data')
-  //
-  //   doHandle = instance.cwrap('handle', 'string', ['string', 'string'], { async: true })
-  } else if (options.format === "wasm64-unknown-emscripten-draft_2024_02_15") {
+  }
+  else if (options.format === "wasm32-unknown-emscripten4") {
+    isAsyncModule = true;
+    if (typeof binary === "function") {
+      options.instantiateWasm = binary;
+    }
+    else {
+      options.wasmBinary = binary;
+    }
+    instance = await Emscripten4(options);
+    await instance['FS_createPath']('/', 'data');
+    doHandle = instance.cwrap('handle', 'string', ['string', 'string'], { async: true });
+  }
+  else if (options.format === "wasm64-unknown-emscripten-draft_2024_02_15") {
+    isAsyncModule = true;
     if (typeof binary === "function") {
       options.instantiateWasm = binary
     } else {
       options.wasmBinary = binary
     }
-
     instance = await Wasm64(options)
     await instance['FS_createPath']('/', 'data')
     doHandle = instance.cwrap('handle', 'string', ['string', 'string'], { async: true })
@@ -143,13 +141,11 @@ module.exports = async function (binary, options) {
   if (instance?.cleanupListeners) {
     instance.cleanupListeners()
   }
-  // const asyncFormats = [
-  //   "wasm64-unknown-emscripten-draft_2024_02_15",
-  //   "wasm32-unknown-emscripten4-weavedrive",
-  // ];
-  // if (!asyncFormats.includes(options.format)) {
-  if (options.format !== "wasm64-unknown-emscripten-draft_2024_02_15") {
+  if (instance && !isAsyncModule) {
+    console.log("Not async module")
     doHandle = instance.cwrap('handle', 'string', ['string', 'string'])
+  } else {
+    throw "Error loading wasm. Instance not defined while applying handle cwrap."
   }
 
 
@@ -163,7 +159,7 @@ module.exports = async function (binary, options) {
       /** end mock Math.random */
 
       /** start mock console.log */
-      console.log = function () { return null }
+      // console.log = function () { return null }
       /** end mock console.log */
 
       if (buffer) {
@@ -181,7 +177,7 @@ module.exports = async function (binary, options) {
       } catch (err) {console.log(err)}
 
       const res = await doHandle(JSON.stringify(msg), JSON.stringify(env))
-      console.log(String(res));
+      // console.log(String(res));
       const { ok, response } = JSON.parse(res)
       if (!ok) throw response
 

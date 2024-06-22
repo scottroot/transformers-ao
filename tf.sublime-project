@@ -11,7 +11,7 @@
             "file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
             "name": "Node Builder",
             "selector": "source.js",
-            "shell_cmd": "node --inspect $file",
+            "shell_cmd": "node $file",
         },
         {
             "file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
