@@ -2,12 +2,10 @@
 name = "transformers-ao"
 version = "0.0.1"
 edition = "2021"
-#build = "build/main.rs"
 
 [features]
 default = []
 lib = []
-logging = []
 
 [lib]
 crate-type = ["cdylib"]
@@ -18,9 +16,6 @@ serde = { version = "1.0.171" }
 serde_json = "1.0.117"
 wasm-bindgen = "0.2.92"
 base64 = "0.22.1"
-# candle-core = { git = "https://github.com/huggingface/candle.git", version = "0.6.0" }
-# candle-nn = { git = "https://github.com/huggingface/candle.git", version = "0.6.0" }
-# candle-transformers = { git = "https://github.com/huggingface/candle.git", version = "0.6.0" }
 candle-core = { git = "https://github.com/huggingface/candle.git", tag = "0.5.1" }
 candle-nn = { git = "https://github.com/huggingface/candle.git", tag = "0.5.1" }
 candle-transformers = { git = "https://github.com/huggingface/candle.git", tag = "0.5.1" }
@@ -34,15 +29,20 @@ lazy_static = "1.4.0"
 [build-dependencies]
 cc = "1.0.3"
 
+#    [profile.debug-release]
+#    codegen-units = 16
+#    panic = "unwind"
+#    strip = "none"
+#    debug = true
+#    debug-assertions = true
+
 [profile.release]
-#opt-level = "z"
-#lto = true
-codegen-units = 16
+codegen-units = 1
 panic = "unwind" # "abort"
-strip = "none" #"debuginfo" #none # debuginfo # symbols
-debug = true
-debug-assertions = true
-#overflow-checks = false
+strip = "debuginfo" #"debuginfo" #none # debuginfo # symbols
+debug = false
+debug-assertions = false
+overflow-checks = false
 
 [profile.dev]
 opt-level = 2
