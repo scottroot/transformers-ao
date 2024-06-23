@@ -1,21 +1,17 @@
-#![allow(dead_code)]
-#![allow(unused_imports)]
-use std::ffi::{c_char, c_int, c_void, CStr, CString};
+use std::ffi::{c_char, CStr, CString};
 use mlua::Lua;
 use mlua::prelude::*;
 use std::sync::{Mutex, MutexGuard};
 use lazy_static::lazy_static;
 
 mod aos;
-use aos::preloader;
-use crate::aos::preloader::LoadType;
+use aos::aos_process;
 
 mod models;
 mod weavedrive;
 mod utils;
 
 
-#[link(wasm_import_module = "env")]
 extern "C" {
     fn ao_log_js(message: *const u8);
 }
@@ -27,7 +23,7 @@ pub fn ao_log(message: &str) {
 
 #[cfg(target_arch = "wasm32")]
 pub fn ao_log(message: &str) {
-    // matching in case it contains null bytes for some reason
+    // matching in case the message contains null bytes or something...
     match CString::new(message) {
         Ok(c_message) => {
             let c_message_ptr = c_message.as_ptr() as *const u8;
@@ -43,9 +39,21 @@ pub fn ao_log(message: &str) {
 
 
 lazy_static! {
+    /// A global static ref to a `Mutex` holding an `Option`-wrapped Lua state.
+    /// Ensures that subsequent runs on AO will persist any state changes and that
+    /// the Lua state is only initialized once.
     static ref LUA_STATE: Mutex<Option<Lua>> = Mutex::new(None);
 }
 
+/// Gets the guard to the global Lua state.
+///
+/// Locks the `LUA_STATE` mutex and returns a guard to it. If the mutex was previously
+/// poisoned somehow, it tries to recover by taking the inner value of the poisoned mutex,
+/// but if not, it will just freak out.
+///
+/// # Returns
+///
+/// A `MutexGuard` to the `Option<Lua>` inside the `LUA_STATE` mutex.
 fn get_lua_state() -> MutexGuard<'static, Option<Lua>> {
     match LUA_STATE.lock() {
         Ok(guard) => guard,
@@ -55,10 +63,32 @@ fn get_lua_state() -> MutexGuard<'static, Option<Lua>> {
         }
     }
 }
+
+/// Converts a Rust `String` to a `CString` and returns it as a raw C string pointer.
+///
+/// # Arguments
+///
+/// * `rust_string` - The Rust `String` to be converted.
+///
+/// # Returns
+///
+/// A raw pointer to a null-terminated C string (`*const c_char`).
+///
+/// # Panics
+///
+/// This function will panic if your `rust_string` contains any null bytes.
 pub fn to_c_string(rust_string: String) -> *const c_char {
     CString::new(rust_string).unwrap().into_raw()
 }
 
+/// Initialize global Lua state once.
+///
+/// This function initializes the global Lua state if it has not been initialized yet.
+///
+/// # Returns
+///
+/// * () if successful
+/// * `LuaError` if failure
 fn boot_lua() -> LuaResult<()> {
     let mut lua_lock = get_lua_state();
     if lua_lock.is_none() {
@@ -67,41 +97,18 @@ fn boot_lua() -> LuaResult<()> {
         return Ok(())
     };
     let lua = lua_lock.as_ref().expect("Lua state is not initialized");
-
     let globals = lua.globals();
+
     globals.set("println", lua.create_function(|_, s: String| {
-        ao_log(&format!("{}", s));
+        println!("{}", s);
         Ok(())
     })?)?;
 
     weavedrive::preload(lua)?;
-
     models::bert::preload(lua)?;
-
     utils::preload_serde_json(lua)?;
     utils::mock_non_deterministic_globals(lua)?;
-
-    preloader::set_loaded(lua, "ao", include_str!("aos/ao.lua"), LoadType::Table)?;
-    preloader::set_loaded(lua, "json", include_str!("aos/json.lua"), LoadType::Table)?;
-
-    // Unit Tests for AOS Lua code is in aos/preloader.rs
-    preloader::set_loaded(&lua, ".pretty", include_str!("aos/pretty.lua"), LoadType::Table)?;
-    preloader::set_loaded(&lua, ".base64", include_str!("aos/base64.lua"), LoadType::Table)?;
-    preloader::set_loaded(&lua, ".chance", include_str!("aos/chance.lua"), LoadType::Table)?;
-    preloader::set_loaded(&lua, ".dump", include_str!("aos/dump.lua"), LoadType::Function)?;
-    preloader::set_loaded(&lua, ".utils", include_str!("aos/utils.lua"), LoadType::Table)?;
-    preloader::set_loaded(&lua, ".handlers-utils", include_str!("aos/handlers-utils.lua"), LoadType::Table)?;
-    preloader::set_loaded(&lua, ".handlers", include_str!("aos/handlers.lua"), LoadType::Table)?;
-    preloader::set_loaded(&lua, ".stringify", include_str!("aos/stringify.lua"), LoadType::Table)?;
-    preloader::set_loaded(&lua, ".eval", include_str!("aos/eval.lua"), LoadType::Function)?;
-    preloader::set_eval_lua(&lua)?;
-    preloader::set_loaded(&lua, ".default", include_str!("aos/default.lua"), LoadType::Function)?;
-    preloader::set_loaded(&lua, ".handlers", include_str!("aos/handlers.lua"), LoadType::Table)?;
-
-    preloader::set_loaded(lua, ".process", include_str!("aos/process.lua"), LoadType::Table)?;
-    // preloader::set_loaded(lua, ".loader", include_str!("aos/loader.lua"), LoadType::Function)?;
-    let loader: LuaFunction = lua.load(include_str!("aos/loader.lua")).eval()?;
-    globals.set(".loader", loader)?;
+    aos_process::preload(&lua)?;
 
     lua.load(r#"Handlers.add("pingpong", Handlers.utils.hasMatchingTag("Action", "ping"), Handlers.utils.reply("pong"))"#).exec()?;
 
@@ -176,7 +183,6 @@ mod tests {
     use super::*;
     use std::ffi::{CStr, CString};
     use std::os::raw::c_char;
-    use mlua::chunk;
 
     #[test]
     fn test_to_c_string() {
@@ -189,17 +195,8 @@ mod tests {
         }
     }
 
-    // #[test]
-    // fn test_main() {
-    //     let result = main();
-    //     assert_eq!(result, 0);
-    // }
-
     #[test]
     fn test_boot_lua() {
-
-        // let mut lua = Lua::new();
-        // let result = boot_lua(&mut lua);
         let result = boot_lua();
         assert!(result.is_ok());
 
@@ -211,15 +208,7 @@ mod tests {
         let result = println.call::<_, ()>("'test println message'".to_string());
         assert!(result.is_ok(), "test_boot_lua - println");
 
-        // // Test "_stringify" function
-        // let stringify: mlua::Function = lua.globals().get("_stringify").unwrap();
-        // let table = lua.create_table().unwrap();
-        // table.set("Name", "Alice").unwrap();
-        // let result: String = stringify.call(table).unwrap();
-        // assert_eq!(result, r#"{"Name":"Alice"}"#);
-
-        // Test if "lua_bundle" table is available
-        // let lua_bundle: LuaTable = lua.globals().get("lua_bundle").unwrap();
+        // Test packages loaded
         let package: LuaTable = lua.globals().get("package").unwrap();
         let loaded: LuaTable = package.get("loaded").unwrap();
         assert!(loaded.contains_key(".pretty").unwrap());
@@ -233,14 +222,6 @@ mod tests {
         assert!(loaded.contains_key(".eval").unwrap());
         assert!(loaded.contains_key(".default").unwrap());
         assert!(loaded.contains_key(".handlers").unwrap());
-
-        // Test if "process" module is loaded
-        // let process: LuaFunction = lua.load("return require('.process')").eval().unwrap();
-        // assert!(process.type_name() == "function");
-
-        // // Test if the final script execution was successful
-        // let handlers_add: LuaFunction = lua.load(r#"return Handlers.add"#).eval().unwrap();
-        // assert!(handlers_add.type_name() == "function");
     }
 
     // #[test]
@@ -260,7 +241,7 @@ mod tests {
     //         "Tags": [{"name": "Action", "value": "Eval"}],
     //         "Data": r#"
     //             Handlers.add('marcopolo',
-    //                 Handlers.utils.hasMatchingData('marco'),
+    //                 Handlers.utils.hasMatchingTag('Action', 'marco'),
     //                 function (Msg)
     //                     return('polo')
     //                 end
@@ -279,14 +260,6 @@ mod tests {
     //     globals.set("env", env).unwrap();
     //     let handle_1: LuaResult<String> = lua.load("handle(msg, env)").eval();
     //     assert!(handle_1.is_ok());
-    //     // match handle_1 {
-    //     //     Ok(x) => println!("MSG 1:\n{}", x),
-    //     //     Err(e) => eprintln!("{}", e)
-    //     // };
-    //
-    //
-    //
-    //
     //
     //     let msg = serde_json::to_string(&serde_json::json!({
     //         "Target": "AOS",
@@ -294,8 +267,7 @@ mod tests {
     //         "Block-Height": "1000",
     //         "Id": "1234xyxfoo",
     //         "Module": "WOOPAWOOPA",
-    //         // "Tags": [{"name": "Action", "value": "Eval"}],
-    //         "Data": "marco"
+    //         "Tags": [{"name": "Action", "value": "marco"}],
     //     })).unwrap();
     //     globals.set("msg", msg).unwrap();
     //
@@ -304,13 +276,10 @@ mod tests {
     //
     //     let result = handle_2.unwrap().to_string().unwrap();
     //     let ujson: serde_json::Value = serde_json::from_str(&result).unwrap();
-    //     println!("********\n>>>>{}<<<<\n********", ujson);
     //     let result = ujson.get("response")
     //         .and_then(|r| r.get("Output"))
     //         .and_then(|m| m.get("data"))
     //         .unwrap();
-    //     // ujson["Messages"].as_array().unwrap().last().unwrap()["Data"].as_str().unwrap().to_string()
-    //     println!(">>>>{}<<<<", result);
     //     assert_eq!(result, "polo");
     //
     //

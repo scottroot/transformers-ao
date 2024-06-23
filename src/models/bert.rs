@@ -84,13 +84,13 @@ impl Args {
             .map_err(|err| LuaError::external(err))?;
         let model = BertModel::load(vb, &config)
             .map_err(|err| {
-                ao_log!("!! Error on BertModel::load()\n{}", err);
+                ao_log(&format!("!! Error on BertModel::load()\n{}", err));
                 LuaError::external(err)
             })?;
         let tokenizer_bytes = b64.decode(self.tokenizer.clone()).map_err(|e| LuaError::external(e))?;
         let tokenizer = Tokenizer::from_bytes(tokenizer_bytes)
             .map_err(|err| {
-                ao_log!("!! Error on Tokenizer::from_bytes\n{}", err);
+                ao_log(&format!("!! Error on Tokenizer::from_bytes\n{}", err));
                 LuaError::external(err)
             })?;
         Ok((model, tokenizer))
@@ -113,22 +113,22 @@ impl Args {
             .map_err(|err| {
                 // If there's a problem here, it is likely just going to panic and won't print this error.
                 // Seems like issue with i64 and thread initialization in latest candle
-                ao_log!("!! Error on Tensor::new\n {}", err);
+                ao_log(&format!("!! Error on Tensor::new\n {}", err));
                 LuaError::external(err)
             })?
             .unsqueeze(0)
             .map_err(|err| {
-                ao_log!("!! Error on token_ids ... unsqueeze\n {}", err);
+                ao_log(&format!("!! Error on token_ids ... unsqueeze\n {}", err));
                 LuaError::external(err)
             })?;
         let token_type_ids = token_ids.zeros_like()
             .map_err(|err| {
-                ao_log!("!! Error on token_type_ids\n {}", err);
+                ao_log(&format!("!! Error on token_type_ids\n {}", err));
                 LuaError::external(err)
             })?;
         let embeddings = model.forward(&token_ids, &token_type_ids)
             .map_err(|err| {
-                ao_log!("!! Error on model.forward\n {}", err);
+                ao_log(&format!("!! Error on model.forward\n {}", err));
                 LuaError::external(err)
             })?;
 
@@ -147,24 +147,20 @@ impl Args {
         let embeddings_data = embeddings
             .flatten_all()
             .map_err(|err| {
-                ao_log!("!! Error on embeddings_data.flatten_all()\n{}", err);
+                ao_log(&format!("!! Error on embeddings_data.flatten_all()\n{}", err));
                 LuaError::external(err)
             })?
             .to_vec1()
             .map_err(|err| {
-                ao_log!("!! Error on embeddings_data.to_vec1\n{}", err);
+                ao_log(&format!("!! Error on embeddings_data.to_vec1\n{}", err));
                 LuaError::external(err)
             })?;
 
         Ok(embeddings_data)
     }
 }
-// TODO: cleanup leftover thread stuff if not going to bring back global state or thread management
-// fn initialize_rayon() {
-//     ThreadPoolBuilder::new().num_threads(1).build_global().unwrap();
-// }
+
 fn encode_text(_lua: &Lua, table: LuaTable) -> LuaResult<String> {
-    // TODO: remove the hard-coded model tokenizer config and get it from the passed Lua table
     let model: String = table.get("model")?;
     let model_id: String = table.get("model_id")?;
     // let model_id = "sentence-transformers/all-MiniLM-L6-v2";
@@ -201,11 +197,9 @@ fn encode_text(_lua: &Lua, table: LuaTable) -> LuaResult<String> {
             eprintln!("Error in serializing embeddings\n{}", err);
             LuaError::external(err)
         })?;
-    // println!("{}", output_str);
     Ok(output_str)
 }
 
-// #[mlua::lua_module]
 pub fn preload(lua: &Lua) -> LuaResult<()> {
     let package: LuaTable = lua.globals().get("package")?;
     let loaded: LuaTable = package.get("loaded")?;

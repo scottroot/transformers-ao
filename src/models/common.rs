@@ -1,6 +1,7 @@
-#[allow(dead_code)]
+// #[allow(dead_code)]
 // use anyhow::{Result as AnyResult};
-use candle_core::{Tensor, Result as CandleResult, Error as CandleError, DType, Device};
+// use candle_core::{Tensor, Result as CandleResult, Error as CandleError, DType, Device};
+use candle_core::{Tensor, Result as CandleResult};
 
 
 // pub fn normalize_l2(v: &Tensor) -> AnyResult<Tensor> {

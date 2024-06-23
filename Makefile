@@ -5,7 +5,15 @@ CONTAINER_VERSION := latest
 
 .PHONY: clean
 clean:
-	@echo "Removing $(shell ls build/transformers_ao.*)" && -rm build/transformers_ao.*
+	@files=$$(ls build/transformers_ao.* 2>/dev/null); \
+	if [ -n "$$files" ]; then \
+		file_list=$$(echo $$files | tr ' ' '\n'); \
+		echo "Removing:"; \
+		echo "$$file_list" | sed 's/^/ - /'; \
+		rm $$files; \
+	else \
+		echo "No files to remove."; \
+	fi
 	cargo clean
 
 .PHONY: build-container
@@ -14,7 +22,6 @@ build-container:
 
 .PHONY: build
 build:
-	@-rm outtest.*
 	docker run --rm \
 		-v .:/src \
 		scottroot/ao:$(CONTAINER_VERSION) \
